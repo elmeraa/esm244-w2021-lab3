@@ -1,0 +1,111 @@
+---
+title: "Week3-Code Along: Binary logistic regression"
+author: "Elmera Azadpour"
+date: "1/20/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(palmerpenguins)
+library(GGally)
+library(broom)
+library(jtools)
+```
+
+```{r}
+penguins %>% 
+  select(species, bill_length_mm:sex) %>% 
+  ggpairs(aes(color = species))
+```
+
+Create a subset with only Adelie and Chinstrap penguins.
+```{r}
+adelie_chinstrap <- penguins %>% 
+  filter(species %in% c("Adelie", "Chinstrap")) %>% 
+  mutate(species = fct_drop(species))
+```
+
+Lets do a dataviz of those two species:
+```{r}
+ggplot(data = adelie_chinstrap, aes(x = body_mass_g, 
+                                    y = flipper_length_mm)) + 
+  geom_point(aes(color = sex)) +
+  facet_wrap(~species) # sexual dimorphism present
+# looks like chinstrap tend to be a little larger in flipper length
+```
+
+Binary logistic regression, including:
+- body mass 
+- flipper length
+- penguin sex
+```{r}
+adelie_chinstrap_blr <- glm(species ~ body_mass_g + flipper_length_mm + sex,
+                            data = adelie_chinstrap, 
+                            family = "binomial")
+```
+
+Take a look at the outcomes
+```{r}
+adelie_chinstrap_blr #female is reference level
+summary(adelie_chinstrap_blr)
+# body mass: odds of this penguins being chinstrap is going down, the - sign indicates
+# flipper length: as flipper length increases, odds of this being a chinstrap penguin is increasing, + sign
+# sex: if a penguin is male, it is less likely to be a chinstrap (little weird)
+```
+
+Does the flipper length significance align with what we see visually from the data?
+```{r}
+ggplot(adelie_chinstrap, aes(x = species,
+                             y= flipper_length_mm)) +
+  geom_jitter(aes(color = sex))
+# yes model is reflecting this
+# as flipper length gets larger, its more likely that its a chinstrap penguin
+```
+
+What are the acutal probabilities of being Chinstrap for each of the existing observations in our adelie_chinstrap data frame?
+```{r}
+blr_fitted <- adelie_chinstrap_blr %>% 
+  broom::augment(type.predict = "response") #fitted tells us the probability that it is a chinstrap penguin
+```
+
+plotting fitted probabilities
+```{r}
+ggplot(blr_fitted, aes(x = flipper_length_mm,
+                       y = .fitted)) +
+  geom_point(aes(color = sex, pch = species)) +
+  geom_smooth(aes(color = sex), se = FALSE) +
+  labs( x = "Flipper length (mm)",
+        y = "Probability of outcome Chinstrap")
+```
+Plot model based on different variables:
+```{r}
+effect_plot(adelie_chinstrap_blr,
+            pred = flipper_length_mm,
+            y.label = "Probability of Chinstrap",
+            interval = TRUE)
+
+effect_plot(adelie_chinstrap_blr,
+            pred = body_mass_g,
+            y.label = "Probability of Chinstrap",
+            interval = TRUE)
+```
+
+What's the probability that a female penguin weighing 3410 g with a flipper length of 192mm is a chinstrap?
+```{r}
+ex_1 <- predict(adelie_chinstrap_blr,
+                data.frame(sex = "female",
+                           body_mass_g = 3410,
+                           flipper_length_mm = 192),
+                type = "response")
+ex_1
+
+ex_2 <- predict(adelie_chinstrap_blr,
+                data.frame(sex = "female",
+                           body_mass_g = 4119,
+                           flipper_length_mm = 222),
+                type = "response")
+ex_2
+```
+
