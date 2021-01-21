@@ -1,0 +1,19 @@
+---
+title: "part 2 - customizing Rmarkdown with css"
+author: "Elmera Azadpour"
+date: "1/20/2021"
+output: 
+  html_document: 
+    css: "style.css"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+## This is my level 2 header
+
+### This is my level 3 header
+
+#### This is my level 4 header
+
+This is regular body text

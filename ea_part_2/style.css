@@ -1,0 +1,26 @@
+/* Import Google font */
+
+@import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@500&family=Roboto+Mono&display=swap');
+
+/* Update headers */
+
+h2 {
+  font-family: "Dancing Script";
+  font-size: 80px;
+  color: red;
+}
+
+h3 {
+  font-family: "Roboto Mono";
+  font-size: 80px;
+  color: purple;
+}
+
+/* change body text */
+
+body {
+  font-family: "Dancing Script";
+  font-size: 40px;
+  color: teal;
+  background-color: orange;
+}
